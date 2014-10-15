@@ -1,0 +1,57 @@
+<?php
+
+function civicrm_token_token_info() {
+  $info['types']['civi'] = array(
+    'name' => t('CiviCRM'),
+    'description' => t('Tokens related to CiviCRM.'),
+  );
+  $info['tokens']['civi']['contact_ID'] = array(
+    'name' => t('Contact ID'),
+    'description' => t('CiviCRM contact ID of current user.'),
+  );
+  $info['tokens']['civi']['contact_dashboard'] = array(
+    'name' => t('Contact Dashboard'),
+    'description' => t('CiviCRM contact dashborad of current user.'),
+  );
+  $info['tokens']['civi']['contact_first_name'] = array(
+    'name' => t('Contact First Name'),
+    'description' => t('CiviCRM contact first name of current user.'),
+  );
+  $info['tokens']['civi']['contact_last_name'] = array(
+    'name' => t('Contact Last Name'),
+    'description' => t('CiviCRM contact last name of current user.'),
+  );
+  $info['tokens']['civi']['contact_email'] = array(
+    'name' => t('Contact Email'),
+    'description' => t('CiviCRM contact email of current user.'),
+  );
+  $info['tokens']['civi']['contact_telephone'] = array(
+    'name' => t('Contact Phone Number'),
+    'description' => t('CiviCRM contact telephone number of current user.'),
+  );
+  return $info;
+}
+
+function civicrm_token_tokens($type, $tokens, array $data = array(), array $options = array()) {
+  $replacements = array();
+
+  $sanitize = !empty($options['sanitize']);
+
+  civicrm_initialize();
+  $session = CRM_Core_Session::singleton();
+  $userID = $session->get('userID');
+
+  if ($type == 'civi' && !is_null($userID)) {
+    $result = civicrm_api3('Contact', 'get', array('id' => $userID));
+    if( $result['count'] !== 0 || $result['is_error'] == 0 ){
+      $params = array_pop($result['values']);
+      $replacements['[civi:contact_ID]'] = $userID;
+      $replacements['[civi:contact_dashboard]'] = "civicrm/user?reset=1&id=".$userID;
+      $replacements['[civi:contact_first_name]'] = $params['first_name'];
+      $replacements['[civi:contact_last_name]'] = $params['last_name'];
+      $replacements['[civi:contact_email]'] = $params['email'];
+      $replacements['[civi:contact_telephone]'] = $params['phone'];
+    }
+  }
+  return $replacements;
+}
