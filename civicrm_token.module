@@ -14,27 +14,27 @@ function civicrm_token_token_info() {
     'name' => t('CiviCRM'),
     'description' => t('Tokens related to CiviCRM.'),
   );
-  $info['tokens']['civi']['contact_ID'] = array(
+  $info['tokens']['civi']['contact-ID'] = array(
     'name' => t('Contact ID'),
     'description' => t('CiviCRM contact ID of current user.'),
   );
-  $info['tokens']['civi']['contact_dashboard'] = array(
+  $info['tokens']['civi']['contact-dashboard'] = array(
     'name' => t('Contact Dashboard'),
     'description' => t('CiviCRM contact dashborad of current user.'),
   );
-  $info['tokens']['civi']['contact_first_name'] = array(
+  $info['tokens']['civi']['contact-first-name'] = array(
     'name' => t('Contact First Name'),
     'description' => t('CiviCRM contact first name of current user.'),
   );
-  $info['tokens']['civi']['contact_last_name'] = array(
+  $info['tokens']['civi']['contact-last-name'] = array(
     'name' => t('Contact Last Name'),
     'description' => t('CiviCRM contact last name of current user.'),
   );
-  $info['tokens']['civi']['contact_email'] = array(
+  $info['tokens']['civi']['contact-email'] = array(
     'name' => t('Contact Email'),
     'description' => t('CiviCRM contact email of current user.'),
   );
-  $info['tokens']['civi']['contact_telephone'] = array(
+  $info['tokens']['civi']['contact-telephone'] = array(
     'name' => t('Contact Phone Number'),
     'description' => t('CiviCRM contact telephone number of current user.'),
   );
@@ -63,12 +63,12 @@ function civicrm_token_tokens($type, $tokens, array $data = [], array $options =
     $result = civicrm_api3('Contact', 'get', array('id' => $currContactId));
     if ($result['count'] !== 0 || $result['is_error'] == 0) {
       $params = array_pop($result['values']);
-      $replacements['[civi:contact_ID]'] = $currContactId;
-      $replacements['[civi:contact_dashboard]'] = "civicrm/user?reset=1&id=" . $currContactId;
-      $replacements['[civi:contact_first_name]'] = $params['first_name'];
-      $replacements['[civi:contact_last_name]'] = $params['last_name'];
-      $replacements['[civi:contact_email]'] = $params['email'];
-      $replacements['[civi:contact_telephone]'] = $params['phone'];
+      $replacements['[civi:contact-ID]'] = $currContactId;
+      $replacements['[civi:contact-dashboard]'] = "civicrm/user?reset=1&id=" . $currContactId;
+      $replacements['[civi:contact-first_name]'] = $params['first_name'];
+      $replacements['[civi:contact-last_name]'] = $params['last_name'];
+      $replacements['[civi:contact-email]'] = $params['email'];
+      $replacements['[civi:contact-telephone]'] = $params['phone'];
       // Process dynamic tokens.
       $tokenValues = \Drupal::token()->findWithPrefix($tokens, 'num-of-records-via-gid');
       foreach ($tokenValues as $groupId => $tokenName) {
