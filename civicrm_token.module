@@ -54,7 +54,7 @@ function civicrm_token_tokens($type, $tokens, array $data = [], array $options =
   \Drupal::service('civicrm')->initialize();
   $currentUserContactId = \CRM_Core_BAO_UFMatch::getContactId($currentUser->id());
 
-  if ($type == 'civi' && !is_null()) {
+  if ($type == 'civi' && !is_null($currentUserContactId)) {
     $result = civicrm_api3('Contact', 'get', array('id' => $currentUserContactId));
     if( $result['count'] !== 0 || $result['is_error'] == 0 ){
       $params = array_pop($result['values']);
