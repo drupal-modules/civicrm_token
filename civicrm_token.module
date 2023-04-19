@@ -1,6 +1,15 @@
 <?php
 
+/**
+ * @file
+ * CiviCRM Token main module file.
+ */
+
+/**
+ * Implements hook_token_info().
+ */
 function civicrm_token_token_info() {
+  $info = [];
   $info['types']['civi'] = array(
     'name' => t('CiviCRM'),
     'description' => t('Tokens related to CiviCRM.'),
@@ -32,21 +41,25 @@ function civicrm_token_token_info() {
   return $info;
 }
 
-function civicrm_token_tokens($type, $tokens, array $data = array(), array $options = array()) {
+/**
+ * Implements hook_tokens().
+ *
+ */
+function civicrm_token_tokens($type, $tokens, array $data = [], array $options = []) {
   $replacements = array();
 
+  $currentUser = \Drupal::currentUser();
   $sanitize = !empty($options['sanitize']);
 
-  civicrm_initialize();
-  $session = CRM_Core_Session::singleton();
-  $userID = $session->get('userID');
+  \Drupal::service('civicrm')->initialize();
+  $currentUserContactId = \CRM_Core_BAO_UFMatch::getContactId($currentUser->id());
 
-  if ($type == 'civi' && !is_null($userID)) {
-    $result = civicrm_api3('Contact', 'get', array('id' => $userID));
+  if ($type == 'civi' && !is_null()) {
+    $result = civicrm_api3('Contact', 'get', array('id' => $currentUserContactId));
     if( $result['count'] !== 0 || $result['is_error'] == 0 ){
       $params = array_pop($result['values']);
-      $replacements['[civi:contact_ID]'] = $userID;
-      $replacements['[civi:contact_dashboard]'] = "civicrm/user?reset=1&id=".$userID;
+      $replacements['[civi:contact_ID]'] = $currentUserContactId;
+      $replacements['[civi:contact_dashboard]'] = "civicrm/user?reset=1&id=" . $currentUserContactId;
       $replacements['[civi:contact_first_name]'] = $params['first_name'];
       $replacements['[civi:contact_last_name]'] = $params['last_name'];
       $replacements['[civi:contact_email]'] = $params['email'];
