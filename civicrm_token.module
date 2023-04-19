@@ -38,6 +38,11 @@ function civicrm_token_token_info() {
     'name' => t('Contact Phone Number'),
     'description' => t('CiviCRM contact telephone number of current user.'),
   );
+  $info['tokens']['civi']['num-of-records-via-gid'] = array(
+    'name' => t('Number of records submitted'),
+    'description' => t('Number of records submitted for given group ID by the current user.'),
+    'dynamic' => TRUE,
+  );
   return $info;
 }
 
@@ -52,18 +57,29 @@ function civicrm_token_tokens($type, $tokens, array $data = [], array $options =
   $sanitize = !empty($options['sanitize']);
 
   \Drupal::service('civicrm')->initialize();
-  $currentUserContactId = \CRM_Core_BAO_UFMatch::getContactId($currentUser->id());
+  $currContactId = \CRM_Core_BAO_UFMatch::getContactId($currentUser->id());
 
-  if ($type == 'civi' && !is_null($currentUserContactId)) {
-    $result = civicrm_api3('Contact', 'get', array('id' => $currentUserContactId));
-    if( $result['count'] !== 0 || $result['is_error'] == 0 ){
+  if ($type == 'civi' && !is_null($currContactId)) {
+    $result = civicrm_api3('Contact', 'get', array('id' => $currContactId));
+    if ($result['count'] !== 0 || $result['is_error'] == 0) {
       $params = array_pop($result['values']);
-      $replacements['[civi:contact_ID]'] = $currentUserContactId;
-      $replacements['[civi:contact_dashboard]'] = "civicrm/user?reset=1&id=" . $currentUserContactId;
+      $replacements['[civi:contact_ID]'] = $currContactId;
+      $replacements['[civi:contact_dashboard]'] = "civicrm/user?reset=1&id=" . $currContactId;
       $replacements['[civi:contact_first_name]'] = $params['first_name'];
       $replacements['[civi:contact_last_name]'] = $params['last_name'];
       $replacements['[civi:contact_email]'] = $params['email'];
       $replacements['[civi:contact_telephone]'] = $params['phone'];
+      // Process dynamic tokens.
+      $tokenValues = \Drupal::token()->findWithPrefix($tokens, 'num-of-records-via-gid');
+      foreach ($tokenValues as $groupId => $tokenName) {
+        $groupRes = civicrm_api3('CustomGroup', 'get', ['sequential' => 1, 'id' => $groupId]);
+        if ($groupRes['count'] !== 0 || $groupRes['is_error'] == 0) {
+          $groupTableName = $groupRes['values'][0]['table_name'];
+          $dao = \CRM_Core_DAO::executeQuery("SELECT COUNT(id) as res FROM `${groupTableName}` WHERE entity_id = '${currContactId}'");
+          $dao->fetch();
+          $replacements[$tokenName] = (int)$dao->res;
+        }
+      }
     }
   }
   return $replacements;
